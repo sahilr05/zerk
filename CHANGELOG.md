@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.6.0] - 2026-06-26
+
+### Added
+- **Named test cases** - save your filled-in request body and parameters as a named input set per endpoint (e.g. "valid data", "missing field", "admin token"). Switch between them from a dropdown in the request panel. Stored in a committable `.api-explorer/cases.json` so they version with your code and share over git - and because only your inputs are saved (never the schema), they can't drift out of sync with the spec.
+- **Form-urlencoded request bodies** - the request panel is now content-type aware. Endpoints that expect `application/x-www-form-urlencoded` (notably FastAPI's `OAuth2PasswordRequestForm` at `/auth/login`) now render and send correctly, with empty fields omitted.
+
+### Fixed
+- Login endpoints could not authenticate because the panel always sent JSON, producing stale-token `401`s on subsequent requests. Form logins now succeed and the auth token is captured automatically.
+
 ## [0.5.0] - 2026-04-11
 
 ### Fixed

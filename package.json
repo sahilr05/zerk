@@ -2,7 +2,7 @@
   "name": "api-explorer",
   "displayName": "API Explorer",
   "description": "Zero-config API explorer for FastAPI and OpenAPI projects. Auto-discovers endpoints, fires requests, and navigates to source - without leaving VSCode.",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": false,
   "publisher": "sahilrajpal",
   "author": "Sahil Rajpal",
@@ -205,7 +205,8 @@
     "clean": "rm -rf out",
     "lint": "tsc --noEmit",
     "package": "vsce package",
-    "publish": "vsce publish"
+    "publish": "vsce publish",
+    "publish:ovsx": "ovsx publish"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

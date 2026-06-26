@@ -67,6 +67,14 @@ Every request you fire is saved to a per-project history with method, status cod
 
 ---
 
+### Named test cases — version them with your code
+
+Fill in a request body and parameters, click **＋ Save current**, and name the input set — "valid data", "missing field", "admin token". Reopen the endpoint and pick any saved case from the dropdown to restore those exact inputs.
+
+Cases are stored in a plain `.api-explorer/cases.json` file in your workspace, so you can **commit them to git and share them with your team** — no separate collection app, no account. And because only *your inputs* are saved (never the schema), they can't drift out of sync with your API the way a hand-maintained collection does. Your running server stays the single source of truth.
+
+---
+
 ### Native VSCode feel
 
 - Each endpoint opens in its own tab - click the same endpoint again to return to it
@@ -119,7 +127,7 @@ To change the URL, auth, or default headers: click the ⚙ icon in the sidebar t
 
 ## Built for FastAPI
 
-API Explorer is built and optimized for FastAPI. Everything works out of the box — zero config, full `$ref` schema resolution, and source navigation direct to your route handler.
+API Explorer is built and optimized for FastAPI. Everything works out of the box — zero config, full `$ref` schema resolution, source navigation direct to your route handler, and content-type-aware request bodies (including `application/x-www-form-urlencoded` so `OAuth2PasswordRequestForm` logins like `/auth/login` just work).
 
 Support for other OpenAPI-compatible frameworks is planned for a future release.
 
