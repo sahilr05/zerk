@@ -9,6 +9,7 @@ import { StatusBarManager }     from './statusBar/statusBarManager'
 import { HistoryManager }       from './history/historyManager'
 import { HistoryTreeProvider }  from './history/historyTreeProvider'
 import { AuthStore }            from './auth/authStore'
+import { CasesStore }           from './cases/casesStore'
 import { goToSource }           from './navigation/sourceNavigator'
 import { ApiEndpoint }          from './types/endpoint'
 
@@ -19,6 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
     const config       = new ConfigManager(context)
     const history      = new HistoryManager(context)
     const authStore    = new AuthStore(context)
+    const cases        = new CasesStore()
     const treeProvider = new EndpointTreeProvider([], context.extensionUri)
     const histProvider = new HistoryTreeProvider(history)
     const statusBar    = new StatusBarManager(config, context)
@@ -205,7 +207,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     const openRequestCommand = vscode.commands.registerCommand(
         'apiExplorer.openRequest',
-        (endpoint: ApiEndpoint) => RequestPanel.create(endpoint, context, config, history, treeProvider, authStore)
+        (endpoint: ApiEndpoint) => RequestPanel.create(endpoint, context, config, history, treeProvider, authStore, cases)
     )
 
     const openFromHistoryCommand = vscode.commands.registerCommand(
@@ -216,7 +218,7 @@ export function activate(context: vscode.ExtensionContext) {
                 path:    entry.path,
                 summary: `From history — ${entry.status} ${entry.statusText}`,
             }
-            RequestPanel.create(endpoint, context, config, history, treeProvider, authStore, {
+            RequestPanel.create(endpoint, context, config, history, treeProvider, authStore, cases, {
                 requestBody:  entry.body,
                 responseBody: entry.responseBody,
                 status:       entry.status,
@@ -355,6 +357,7 @@ export function activate(context: vscode.ExtensionContext) {
         filterMethodCommand, filterModuleCommand,
         toggleSortCommand, filterAndSortCommand,
         authStore,
+        cases,
         config,
     )
 }

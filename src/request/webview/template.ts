@@ -8,6 +8,7 @@ import { ApiEndpoint } from "../../types/endpoint"
 import {
     buildRequestBodyTemplate,
     buildResponseBodyTemplate,
+    getRequestContentType,
 } from "../../openapi/schemaResolver"
 import { getStyles }       from "./styles"
 import { getClientScript } from "./clientScript"
@@ -50,6 +51,9 @@ export function renderPanel(
 
     const bodyContent = restored?.requestBody
         ?? (hasBody ? buildRequestBodyTemplate(endpoint.requestBody, components) : "")
+
+    const contentType = (hasBody && getRequestContentType(endpoint.requestBody)) || "application/json"
+    const isFormBody  = contentType.includes("form-urlencoded") || contentType.includes("form-data")
 
     const responseSchema = buildResponseBodyTemplate(endpoint.responses, components)
 
@@ -101,7 +105,9 @@ export function renderPanel(
     // ── Request body ─────────────────────────────────────────────────────────
     const bodyHtml = hasBody ? `
         <div class="section">
-            <h3 class="section-title">Request Body</h3>
+            <h3 class="section-title">Request Body${isFormBody
+                ? ` <span style="font-weight:400;text-transform:none;letter-spacing:0;color:rgba(204,204,204,.35);font-size:10px">· sent as form (${contentType.replace("application/", "")}) — empty fields are omitted</span>`
+                : ""}</h3>
             <textarea class="code-block" id="requestBody" style="height:140px;resize:vertical;width:100%">${bodyContent}</textarea>
         </div>` : ""
 
@@ -180,6 +186,15 @@ export function renderPanel(
             </button>
         </div>
 
+        <div class="cases-bar" id="casesBar">
+            <span class="cases-tag">Cases</span>
+            <select id="casesSelect" class="cases-select" onchange="loadCase()" title="Load a saved input set">
+                <option value="">— saved cases —</option>
+            </select>
+            <button class="cases-btn" onclick="saveCase()" title="Save current inputs as a named case">＋ Save current</button>
+            <button class="cases-btn cases-del" id="deleteCaseBtn" onclick="deleteCase()" style="display:none" title="Delete selected case">✕</button>
+        </div>
+
         ${pathParamsHtml}
         ${queryParamsHtml}
         ${bodyHtml}
@@ -202,7 +217,7 @@ export function renderPanel(
     </button>
 </div>
 
-<script>${getClientScript(endpoint.path, endpoint.method, baseUrl)}</script>
+<script>${getClientScript(endpoint.path, endpoint.method, baseUrl, contentType)}</script>
 </body>
 </html>`
 }

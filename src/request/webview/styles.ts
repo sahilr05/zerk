@@ -26,6 +26,15 @@ export function getStyles(color: string): string {
     .base-url-value{color:#cccccc;flex:1}
     .base-url-hint{font-size:9px;color:rgba(204,204,204,.25)}
 
+    /* ── Cases bar ── */
+    .cases-bar{display:flex;align-items:center;gap:8px;margin-bottom:24px;margin-top:-12px;font-family:'JetBrains Mono','Fira Code',monospace}
+    .cases-tag{font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:9px;color:rgba(204,204,204,.35);flex-shrink:0}
+    .cases-select{background:#252526;border:1px solid rgba(255,255,255,.1);color:#cccccc;font-family:inherit;font-size:11px;padding:3px 6px;outline:none;min-width:160px;max-width:280px}
+    .cases-select:focus{border-color:${color}}
+    .cases-btn{background:transparent;border:1px solid rgba(255,255,255,.12);color:rgba(204,204,204,.5);font-family:inherit;font-size:10px;padding:3px 8px;cursor:pointer;transition:all .1s;flex-shrink:0}
+    .cases-btn:hover{color:#ccc;border-color:rgba(255,255,255,.3)}
+    .cases-del:hover{color:#f43f5e;border-color:#f43f5e60}
+
     /* ── Sections ── */
     .section{margin-bottom:28px}
     .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(204,204,204,.5);margin-bottom:10px}

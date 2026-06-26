@@ -11,6 +11,7 @@ import { ConfigManager }        from "../config/configManager"
 import { HistoryManager }       from "../history/historyManager"
 import { EndpointTreeProvider } from "../explorer/endpointTreeProvider"
 import { AuthStore }            from "../auth/authStore"
+import { CasesStore }           from "../cases/casesStore"
 import { shouldPromptForToken } from "../auth/authDetector"
 import { extractToken }         from "../auth/tokenExtractor"
 
@@ -21,15 +22,61 @@ export function attachRequestHandler(
     history:         HistoryManager,
     treeProvider:    EndpointTreeProvider,
     authStore:       AuthStore,
+    cases:           CasesStore,
     onMarkPermanent: () => void
 ): vscode.Disposable {
 
     const endpointKey = `${endpoint.method}:${endpoint.path}`
 
+    const postCases = async () => {
+        panel.webview.postMessage({
+            type:      "casesList",
+            available: cases.available,
+            cases:     await cases.list(endpointKey),
+        })
+    }
+
     return panel.webview.onDidReceiveMessage(async (message) => {
 
         if (message.type === "markPermanent") {
             onMarkPermanent()
+            return
+        }
+
+        // ── Named test cases (git-committable deltas) ─────────────────────────
+        if (message.type === "listCases") {
+            await postCases()
+            return
+        }
+
+        if (message.type === "saveCase") {
+            if (!cases.available) {
+                vscode.window.showWarningMessage(
+                    'API Explorer: Open a folder to save test cases (they\'re stored in .api-explorer/cases.json).'
+                )
+                return
+            }
+            const name = await vscode.window.showInputBox({
+                title:       `Save test case — ${endpoint.method} ${endpoint.path}`,
+                prompt:      'Name this input set (e.g. "valid data", "missing field", "admin token")',
+                placeHolder: 'valid data',
+                validateInput: v => v.trim() ? null : 'Name cannot be empty',
+            })
+            if (!name) return
+            await cases.save(endpointKey, {
+                name:        name.trim(),
+                body:        message.body || undefined,
+                pathParams:  message.pathParams  && Object.keys(message.pathParams).length  ? message.pathParams  : undefined,
+                queryParams: message.queryParams && Object.keys(message.queryParams).length ? message.queryParams : undefined,
+            })
+            await postCases()
+            vscode.window.setStatusBarMessage(`API Explorer: Saved case "${name.trim()}"`, 2500)
+            return
+        }
+
+        if (message.type === "deleteCase") {
+            await cases.delete(endpointKey, message.name)
+            await postCases()
             return
         }
 
@@ -73,6 +120,7 @@ export function attachRequestHandler(
 
         if (message.type === "sendRequest") {
             const { url, method, body } = message
+            const contentType: string = message.contentType || 'application/json'
 
             // Merge default headers + auth (manual config or auto-extracted token)
             const activeToken   = await authStore.getActiveToken()
@@ -81,7 +129,7 @@ export function attachRequestHandler(
                 : {}
 
             const headers = config.buildRequestHeaders({
-                ...(body ? { 'Content-Type': 'application/json' } : {}),
+                ...(body ? { 'Content-Type': contentType } : {}),
                 ...authOverrides,
             })
 

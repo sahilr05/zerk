@@ -11,6 +11,7 @@ import { ConfigManager }  from "../config/configManager"
 import { HistoryManager } from "../history/historyManager"
 import { EndpointTreeProvider } from "../explorer/endpointTreeProvider"
 import { AuthStore }            from "../auth/authStore"
+import { CasesStore }           from "../cases/casesStore"
 import { renderPanel, RestoredState } from "./webview/template"
 import { attachRequestHandler }       from "./requestHandler"
 
@@ -33,6 +34,7 @@ export class RequestPanel {
         history:      HistoryManager,
         treeProvider: EndpointTreeProvider,
         authStore:    AuthStore,
+        cases:        CasesStore,
         restored?:    RestoredState,
         panelKey?:    string
     ) {
@@ -40,7 +42,7 @@ export class RequestPanel {
             const existing = this._historyPanels.get(panelKey)
             if (existing) { existing.reveal(vscode.ViewColumn.Active); return }
 
-            const p = this._makePanel(panelKey, endpoint, config, history, treeProvider, authStore, restored)
+            const p = this._makePanel(panelKey, endpoint, config, history, treeProvider, authStore, cases, restored)
             this._historyPanels.set(panelKey, p)
             p.onDidDispose(() => this._historyPanels.delete(panelKey))
             return
@@ -51,7 +53,7 @@ export class RequestPanel {
         const existing = this._panels.get(key)
         if (existing) { existing.reveal(vscode.ViewColumn.Active); return }
 
-        const panel = this._makePanel(key, endpoint, config, history, treeProvider, authStore, restored)
+        const panel = this._makePanel(key, endpoint, config, history, treeProvider, authStore, cases, restored)
         this._panels.set(key, panel)
         panel.onDidDispose(() => {
             this._panels.delete(key)
@@ -67,6 +69,7 @@ export class RequestPanel {
         history:      HistoryManager,
         treeProvider: EndpointTreeProvider,
         authStore:    AuthStore,
+        cases:        CasesStore,
         restored?:    RestoredState
     ): vscode.WebviewPanel {
 
@@ -80,7 +83,7 @@ export class RequestPanel {
         panel.webview.html = renderPanel(endpoint, config.baseUrl, restored, config.auth)
 
         const disposable = attachRequestHandler(
-            panel, endpoint, config, history, treeProvider, authStore, () => {}
+            panel, endpoint, config, history, treeProvider, authStore, cases, () => {}
         )
         this._disposables.set(key, disposable)
         panel.onDidDispose(() => disposable.dispose())

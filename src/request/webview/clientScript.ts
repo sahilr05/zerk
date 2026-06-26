@@ -4,7 +4,7 @@
  * Receives endpoint path and baseUrl as template params at render time.
  */
 
-export function getClientScript(endpointPath: string, method: string, baseUrl: string): string {
+export function getClientScript(endpointPath: string, method: string, baseUrl: string, contentType: string = "application/json"): string {
     return `
   const vscode = acquireVsCodeApi()
   let _permanent = false
@@ -13,7 +13,77 @@ export function getClientScript(endpointPath: string, method: string, baseUrl: s
   window.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById('restoredResponse')
     if (el) el.innerHTML = highlight(el.textContent || '')
+    vscode.postMessage({ type: 'listCases' })
   })
+
+  // ── Named test cases ────────────────────────────────────────────────────────
+  let _cases = []
+
+  function escHtmlAttr(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  }
+
+  function renderCases(available) {
+    const bar = document.getElementById('casesBar')
+    const sel = document.getElementById('casesSelect')
+    if (!bar || !sel) return
+    if (available === false) { bar.style.display = 'none'; return }
+    bar.style.display = 'flex'
+
+    const current = sel.value
+    sel.innerHTML = '<option value="">— saved cases —</option>' +
+      _cases.map(c => '<option>' + escHtmlAttr(c.name) + '</option>').join('')
+    if (_cases.some(c => c.name === current)) sel.value = current
+    updateDeleteBtn()
+  }
+
+  function updateDeleteBtn() {
+    const sel = document.getElementById('casesSelect')
+    const del = document.getElementById('deleteCaseBtn')
+    if (del) del.style.display = sel && sel.value ? 'inline-block' : 'none'
+  }
+
+  function collectInputs() {
+    const pathParams = {}
+    document.querySelectorAll('[data-param]').forEach(el => {
+      if (el.value) pathParams[el.getAttribute('data-param')] = el.value
+    })
+    const queryParams = {}
+    document.querySelectorAll('[data-query]').forEach(el => {
+      if (el.value) queryParams[el.getAttribute('data-query')] = el.value
+    })
+    const bodyEl = document.getElementById('requestBody')
+    return { body: bodyEl ? bodyEl.value : '', pathParams, queryParams }
+  }
+
+  function loadCase() {
+    const sel = document.getElementById('casesSelect')
+    updateDeleteBtn()
+    if (!sel || !sel.value) return
+    const c = _cases.find(x => x.name === sel.value)
+    if (!c) return
+
+    const bodyEl = document.getElementById('requestBody')
+    if (bodyEl && c.body !== undefined) bodyEl.value = c.body
+    document.querySelectorAll('[data-param]').forEach(el => {
+      const k = el.getAttribute('data-param')
+      if (c.pathParams && k in c.pathParams) el.value = c.pathParams[k]
+    })
+    document.querySelectorAll('[data-query]').forEach(el => {
+      const k = el.getAttribute('data-query')
+      if (c.queryParams && k in c.queryParams) el.value = c.queryParams[k]
+    })
+  }
+
+  function saveCase() {
+    vscode.postMessage({ type: 'saveCase', ...collectInputs() })
+  }
+
+  function deleteCase() {
+    const sel = document.getElementById('casesSelect')
+    if (!sel || !sel.value) return
+    vscode.postMessage({ type: 'deleteCase', name: sel.value })
+  }
 
   // First input on the page graduates this panel from preview → permanent
   document.addEventListener('input', () => {
@@ -63,6 +133,13 @@ export function getClientScript(endpointPath: string, method: string, baseUrl: s
         badge.style.borderColor = style.color
         badge.style.color       = style.color
       }
+      return
+    }
+
+    // Saved cases list arrived — refresh the dropdown without touching the form
+    if (msg.type === 'casesList') {
+      _cases = msg.cases || []
+      renderCases(msg.available)
       return
     }
 
@@ -199,10 +276,26 @@ export function getClientScript(endpointPath: string, method: string, baseUrl: s
     const url    = '${baseUrl}' + path + (qp.length ? '?' + qp.join('&') : '')
     const bodyEl = document.getElementById('requestBody')
 
+    // Body is always authored as JSON in the textarea. For form endpoints
+    // (e.g. OAuth2 login) we convert that JSON object into a urlencoded string
+    // at send time, dropping empty fields so server-side validation passes.
+    const contentType = '${contentType}'
+    const isForm = contentType.indexOf('form-urlencoded') !== -1
+
+    let sendBody = bodyEl ? bodyEl.value : null
+
     if (bodyEl) {
-      try { JSON.parse(bodyEl.value) } catch {
+      let parsed
+      try { parsed = JSON.parse(bodyEl.value || '{}') } catch {
         area.innerHTML = '<div class="error-block">⚠ Request body is not valid JSON</div>'
         return
+      }
+      if (isForm) {
+        const params = new URLSearchParams()
+        Object.entries(parsed).forEach(([k, v]) => {
+          if (v !== '' && v !== null && v !== undefined) params.append(k, String(v))
+        })
+        sendBody = params.toString()
       }
     }
 
@@ -211,11 +304,11 @@ export function getClientScript(endpointPath: string, method: string, baseUrl: s
     area.innerHTML  = '<div class="placeholder">Waiting for response…</div>'
 
     vscode.postMessage({
-      type:    'sendRequest',
+      type:        'sendRequest',
       url,
-      method:  '${method}',
-      headers: { 'Content-Type': 'application/json' },
-      body:    bodyEl ? bodyEl.value : null,
+      method:      '${method}',
+      contentType: isForm ? 'application/x-www-form-urlencoded' : 'application/json',
+      body:        sendBody,
     })
   }
 
