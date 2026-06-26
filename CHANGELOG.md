@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.7.0] - 2026-06-27
+
+### Added
+- **Two-pane request panel** - inputs (path/query params, request body) on the left, expected and actual response on the right, so wide editor panels are actually used instead of a narrow column. Collapses to a single column when there are no inputs or the panel is narrow.
+- **Method-colored tab icons** - request tabs now show the HTTP-method-colored icon (green GET, blue POST, …), making them scannable apart from code file tabs in the editor tab strip.
+
 ## [0.6.0] - 2026-06-26
 
 ### Added
