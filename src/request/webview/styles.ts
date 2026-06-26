@@ -9,7 +9,13 @@ export function getStyles(color: string): string {
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;background:#1e1e1e;color:#cccccc;display:flex;flex-direction:column;height:100vh;overflow:hidden}
     .scroll-area{flex:1;overflow-y:auto;min-height:0;padding:24px}
-    .inner{max-width:760px}
+    .inner{max-width:1400px;margin:0 auto}
+
+    /* ── Two-pane layout: inputs left, response right (collapses on narrow panels) ── */
+    .panes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:36px;align-items:start}
+    .panes.single{grid-template-columns:minmax(0,1fr)}
+    .pane{min-width:0}
+    @media (max-width:900px){.panes{grid-template-columns:minmax(0,1fr);gap:0}}
 
     /* ── Header ── */
     .header{display:flex;align-items:center;gap:12px;margin-bottom:24px}

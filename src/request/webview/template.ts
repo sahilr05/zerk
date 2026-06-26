@@ -55,6 +55,10 @@ export function renderPanel(
     const contentType = (hasBody && getRequestContentType(endpoint.requestBody)) || "application/json"
     const isFormBody  = contentType.includes("form-urlencoded") || contentType.includes("form-data")
 
+    // Two-pane layout: inputs on the left, response on the right. When there are no
+    // inputs (e.g. a GET with no params/body) the response takes the full width.
+    const hasInputs = pathParams.length > 0 || queryParams.length > 0 || hasBody
+
     const responseSchema = buildResponseBodyTemplate(endpoint.responses, components)
 
     const formattedPath = endpoint.path.replace(
@@ -195,15 +199,23 @@ export function renderPanel(
             <button class="cases-btn cases-del" id="deleteCaseBtn" onclick="deleteCase()" style="display:none" title="Delete selected case">✕</button>
         </div>
 
-        ${pathParamsHtml}
-        ${queryParamsHtml}
-        ${bodyHtml}
-        ${responseSchemaHtml}
+        <div class="panes${hasInputs ? "" : " single"}">
+            ${hasInputs ? `
+            <div class="pane pane-left">
+                ${pathParamsHtml}
+                ${queryParamsHtml}
+                ${bodyHtml}
+            </div>` : ""}
 
-        <div class="section">
-            <h3 class="section-title">Response</h3>
-            <div id="responseArea">
-                ${restoredResponseHtml || '<div class="placeholder">Hit Send to see the response</div>'}
+            <div class="pane pane-right">
+                ${responseSchemaHtml}
+
+                <div class="section">
+                    <h3 class="section-title">Response</h3>
+                    <div id="responseArea">
+                        ${restoredResponseHtml || '<div class="placeholder">Hit Send to see the response</div>'}
+                    </div>
+                </div>
             </div>
         </div>
 
