@@ -142,7 +142,6 @@ export function buildResponseBodyTemplate(responses: any, components: SchemaComp
         if (!schema) return ""
 
         const sample = buildSample(schema, components)
-        console.log('Sample: ', sample)
         return sample !== null ? JSON.stringify(sample, null, 2) : ""
     } catch {
         return ""

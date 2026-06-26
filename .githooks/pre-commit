@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+#
+# Pre-commit security & sanity checks for api-explorer (public repo).
+#
+#   - BLOCKS:  near-certain secrets (keys, JWTs, cloud tokens), forbidden files,
+#              debugger statements, and TypeScript type errors.
+#   - WARNS:   heuristic "looks like a secret" matches and console.log in src/.
+#
+# Escape hatches:
+#   - Bypass all checks once:        git commit --no-verify
+#   - Allowlist one specific line:   add a trailing  // pragma: allowlist secret
+#
+set -uo pipefail
+
+RED=$'\033[0;31m'; YEL=$'\033[0;33m'; GRN=$'\033[0;32m'; NC=$'\033[0m'
+fail=0
+
+block() { echo "${RED}✖ $1${NC}"; fail=1; }
+warn()  { echo "${YEL}⚠ $1${NC}"; }
+
+staged_files() { git diff --cached --name-only --diff-filter=ACM; }
+
+# New/added content only, minus diff headers and explicitly allowlisted lines.
+# The hook's own source is excluded — it necessarily contains the very keywords
+# it scans for (debugger, console.log, secret-pattern regexes).
+added_lines() {
+    git diff --cached -U0 --diff-filter=ACM -- . ':(exclude).githooks/' 2>/dev/null \
+        | grep -E '^\+' | grep -vE '^\+\+\+' \
+        | grep -v 'pragma: allowlist secret'
+}
+
+ADDED="$(added_lines)"
+
+# ── 1) Forbidden file types ──────────────────────────────────────────────────
+while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    case "$f" in
+        .env|.env.*|*.pem|*.key|*.p12|*.pfx|*.keystore|*.vsix)
+            block "Refusing to commit sensitive/build artifact: $f" ;;
+    esac
+done < <(staged_files)
+
+# ── 2) High-signal secret scan (blocking — these are ~never legitimate) ───────
+scan_block() { # label, regex
+    local hits
+    hits="$(printf '%s\n' "$ADDED" | grep -nE -e "$2")" || true
+    if [ -n "$hits" ]; then
+        block "Possible $1 in staged changes:"
+        printf '%s\n' "$hits" | sed 's/^/      /'
+    fi
+}
+
+scan_block "private key"   '-----BEGIN [A-Z ]*PRIVATE KEY-----'
+scan_block "JWT token"     'eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{8,}'
+scan_block "AWS access key" 'AKIA[0-9A-Z]{16}'
+scan_block "GitHub token"  'gh[pousr]_[A-Za-z0-9]{20,}'
+scan_block "Slack token"   'xox[baprs]-[A-Za-z0-9-]{10,}'
+
+# ── 3) debugger statements (blocking) ────────────────────────────────────────
+dbg="$(printf '%s\n' "$ADDED" | grep -nE '(^|[^.[:alnum:]])debugger\b')" || true
+if [ -n "$dbg" ]; then
+    block "Remove debugger statement(s):"
+    printf '%s\n' "$dbg" | sed 's/^/      /'
+fi
+
+# ── 4) Heuristic secret + console.log (warn only — avoids crying wolf) ────────
+secretish="$(printf '%s\n' "$ADDED" \
+    | grep -nE '(secret|passwd|pwd|api[_-]?key|access[_-]?token)["'"'"']?[[:space:]]*[:=][[:space:]]*["'"'"'][^"'"'"'<$[:space:]]{8,}')" || true
+if [ -n "$secretish" ]; then
+    warn "Lines that look like a hardcoded secret — double-check before committing:"
+    printf '%s\n' "$secretish" | sed 's/^/      /'
+fi
+
+clog="$(printf '%s\n' "$ADDED" | grep -nE 'console\.log')" || true
+if [ -n "$clog" ]; then
+    warn "console.log added (fine for debugging, but remove before release):"
+    printf '%s\n' "$clog" | sed 's/^/      /'
+fi
+
+# ── 5) TypeScript typecheck (blocking) ───────────────────────────────────────
+if [ -f package.json ] && [ -d node_modules ] && grep -q '"lint"' package.json; then
+    echo "Running typecheck (npm run lint)…"
+    if ! npm run --silent lint; then
+        block "TypeScript typecheck failed — fix the errors above."
+    fi
+fi
+
+# ── Verdict ──────────────────────────────────────────────────────────────────
+if [ "$fail" -ne 0 ]; then
+    echo ""
+    echo "${RED}Pre-commit checks failed.${NC} Fix the above, or bypass once with: ${YEL}git commit --no-verify${NC}"
+    exit 1
+fi
+echo "${GRN}✔ pre-commit checks passed${NC}"
+exit 0
