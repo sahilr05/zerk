@@ -77,6 +77,16 @@ Cases are stored in a plain `.api-explorer/cases.json` file in your workspace, s
 
 ---
 
+### Run all cases — smoke-test your API in one click
+
+Once you've saved a few cases, fire them all at once. **▶ Run all** on an endpoint replays every saved case and shows an inline pass/fail list — expand any row to see the actual JSON it returned.
+
+Need broader coverage? Right-click a module to run every case under it, or hit the **beaker icon** in the sidebar toolbar to smoke-test the whole API. Results land in a master-detail panel — endpoints grouped with a pass rollup on the left, the selected response on the right.
+
+It's safe by default: only cases you explicitly saved are replayed, GET endpoints can be included automatically, and write methods (POST/PUT/PATCH/DELETE) stay out unless you opt in — with a confirmation before anything is modified. Because requests fire from the extension host against your live server, there's no setup and no CORS.
+
+---
+
 ### Native VSCode feel
 
 - Each endpoint opens in its own tab - click the same endpoint again to return to it

@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.8.0] - 2026-06-27
+
+### Added
+- **Run all cases (per endpoint)** - a "▶ Run all" button in the request panel fires every saved case for that endpoint in one click and shows an inline pass/fail list; each row expands to the full JSON response so you can verify the actual data.
+- **Smoke test (module / whole surface)** - run all saved cases across a module (right-click a module → "Run all in module") or the entire API (the beaker icon in the sidebar toolbar). Choose what to include (uncased GETs, write methods) and confirm before any write requests fire.
+- **Smoke test results panel** - a master-detail view: results grouped by endpoint with a pass rollup on the left, the selected case's actual response (status, time, highlighted JSON) on the right, plus a one-click "Open in request panel".
+
+### Notes
+- Write methods (POST/PUT/PATCH/DELETE) are excluded from smoke runs unless explicitly opted in, and always require a confirmation.
+
 ## [0.7.0] - 2026-06-27
 
 ### Added
