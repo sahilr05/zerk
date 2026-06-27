@@ -205,8 +205,9 @@
   },
   "scripts": {
     "prepare": "git config core.hooksPath .githooks || true",
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run clean && npm run compile && npm run bundle:mcp",
     "compile": "tsc -p ./",
+    "bundle:mcp": "node esbuild.js --production",
     "watch": "tsc -watch -p ./",
     "clean": "rm -rf out",
     "lint": "tsc --noEmit",
@@ -217,6 +218,7 @@
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@types/vscode": "^1.85.0",
+    "esbuild": "^0.28.1",
     "typescript": "~5.8.2"
   },
   "dependencies": {
