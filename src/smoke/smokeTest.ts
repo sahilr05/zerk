@@ -15,7 +15,8 @@ import { CasesStore, TestCase } from '../cases/casesStore'
 import { ConfigManager }        from '../config/configManager'
 import { AuthStore }            from '../auth/authStore'
 import { endpointBelongsTo, inferModulePath } from '../explorer/inferModule'
-import { buildRequestFromCase, executeRequest } from '../request/executeRequest'
+import { buildRequestFromCase, executeRequest } from '../core/executeRequest'
+import { resolveHeaders }     from '../request/extensionAuth'
 
 const WRITE_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE']
 
@@ -110,11 +111,12 @@ async function runScope(deps: Deps, scope: Scope): Promise<void> {
     const panel = SmokePanel.show(context, treeProvider)
     panel.start(scopeLabel, items.length)
 
+    const headers = await resolveHeaders(config, authStore)
     let passed = 0, failed = 0
     for (const item of items) {
         try {
             const req = buildRequestFromCase(item.endpoint, item.testCase, config.baseUrl)
-            const r   = await executeRequest(req, config, authStore)
+            const r   = await executeRequest(req, headers)
             const ok  = r.status >= 200 && r.status < 300
             ok ? passed++ : failed++
             panel.addRow({

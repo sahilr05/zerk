@@ -11,13 +11,9 @@
  */
 
 import * as vscode from 'vscode'
+import { TestCase } from '../core/types'
 
-export interface TestCase {
-    name:         string
-    body?:        string                      // raw request body text (kept as-is, may be empty)
-    pathParams?:  Record<string, string>
-    queryParams?: Record<string, string>
-}
+export type { TestCase }
 
 interface CasesFile {
     version: 1

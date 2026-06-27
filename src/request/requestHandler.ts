@@ -14,7 +14,8 @@ import { AuthStore }            from "../auth/authStore"
 import { CasesStore }           from "../cases/casesStore"
 import { shouldPromptForToken } from "../auth/authDetector"
 import { extractToken }         from "../auth/tokenExtractor"
-import { executeRequest, buildRequestFromCase } from "./executeRequest"
+import { executeRequest, buildRequestFromCase } from "../core/executeRequest"
+import { resolveHeaders }       from "./extensionAuth"
 import { OpenApiLoader }        from "../openapi/openApiLoader"
 import { OpenApiParser }        from "../openapi/openApiParser"
 import { renderPanel }          from "./webview/template"
@@ -163,7 +164,8 @@ export function attachRequestHandler(
             const contentType: string = message.contentType || 'application/json'
 
             try {
-                const result = await executeRequest({ method, url, body, contentType }, config, authStore)
+                const headers = await resolveHeaders(config, authStore)
+                const result  = await executeRequest({ method, url, body, contentType }, headers)
 
                 panel.webview.postMessage({
                     type:       "response",
@@ -236,11 +238,12 @@ export function attachRequestHandler(
                 }
             }
 
+            const headers = await resolveHeaders(config, authStore)
             const results: any[] = []
             for (const c of list) {
                 try {
                     const req = buildRequestFromCase(currentEndpoint, c, config.baseUrl)
-                    const r   = await executeRequest(req, config, authStore)
+                    const r   = await executeRequest(req, headers)
                     results.push({
                         name:       c.name,
                         status:     r.status,

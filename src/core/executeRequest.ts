@@ -1,16 +1,14 @@
 /**
- * executeRequest.ts
- * Host-side request firing - shared by the request panel handler and "Run all".
+ * core/executeRequest.ts
+ * vscode-free request firing - the shared heart of the extension AND the MCP server.
  *
- * Keeps the fetch + auth-attach + parse logic in one place (no webview involved),
- * so cases can be replayed headlessly. Intentionally pure: it does NOT prompt,
- * write history, or detect tokens - callers layer that on as needed.
+ * Pure: it does NOT prompt, write history, detect tokens, or touch any vscode/editor
+ * state. The caller resolves the headers (auth + defaults) and passes them in, so the
+ * exact same firing path serves the request panel, "Run all", and the headless MCP.
  */
 
-import { ApiEndpoint }   from "../types/endpoint"
-import { ConfigManager } from "../config/configManager"
-import { AuthStore }     from "../auth/authStore"
-import { TestCase }      from "../cases/casesStore"
+import { ApiEndpoint }          from "../types/endpoint"
+import { TestCase }             from "./types"
 import { getRequestContentType } from "../openapi/schemaResolver"
 
 export interface PreparedRequest {
@@ -30,7 +28,7 @@ export interface ExecResult {
 /**
  * Assembles a concrete request from an endpoint + a saved case.
  * Mirrors the browser-side assembly in clientScript.ts, including the
- * JSON→form-urlencoded conversion (empty fields dropped) for form bodies.
+ * JSON->form-urlencoded conversion (empty fields dropped) for form bodies.
  */
 export function buildRequestFromCase(
     endpoint: ApiEndpoint,
@@ -79,30 +77,25 @@ export function buildRequestFromCase(
 }
 
 /**
- * Fires a prepared request, attaching the active auth token (if any) and the
- * configured default headers. Returns the parsed response. Throws on network error.
+ * Fires a prepared request with the given headers. The caller owns auth/defaults;
+ * we only ensure the request's content type wins for the body we're actually sending.
+ * Throws on network error.
  */
 export async function executeRequest(
-    req:       PreparedRequest,
-    config:    ConfigManager,
-    authStore: AuthStore
+    req:     PreparedRequest,
+    headers: Record<string, string>
 ): Promise<ExecResult> {
 
-    const activeToken = await authStore.getActiveToken()
-    const authOverrides: Record<string, string> =
-        activeToken && (!activeToken.expiresAt || activeToken.expiresAt > Date.now())
-            ? { Authorization: `Bearer ${activeToken.token}` }
-            : {}
-
-    const headers = config.buildRequestHeaders({
+    // Content-Type last so a form body's type overrides a default of application/json.
+    const finalHeaders: Record<string, string> = {
+        ...headers,
         ...(req.body ? { "Content-Type": req.contentType } : {}),
-        ...authOverrides,
-    })
+    }
 
     const start    = Date.now()
     const response = await fetch(req.url, {
         method:  req.method,
-        headers,
+        headers: finalHeaders,
         body:    req.body || undefined,
     })
     const elapsed = Date.now() - start
