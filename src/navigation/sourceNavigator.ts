@@ -14,7 +14,7 @@ export async function goToSource(endpoint: ApiEndpoint): Promise<void> {
 
     if (!endpoint.operationId) {
         vscode.window.showWarningMessage(
-            `API Explorer: No operationId found for ${endpoint.method} ${endpoint.path}. ` +
+            `Zerk: No operationId found for ${endpoint.method} ${endpoint.path}. ` +
             `Source navigation requires an operationId in the OpenAPI spec.`
         )
         return
@@ -31,7 +31,7 @@ export async function goToSource(endpoint: ApiEndpoint): Promise<void> {
 
             if (!loc) {
                 vscode.window.showWarningMessage(
-                    `API Explorer: Could not find source for "${endpoint.operationId}". ` +
+                    `Zerk: Could not find source for "${endpoint.operationId}". ` +
                     `Make sure your Python files are in the workspace.`
                 )
                 return
@@ -61,7 +61,7 @@ export async function goToSource(endpoint: ApiEndpoint): Promise<void> {
             setTimeout(() => decoration.dispose(), 1500)
 
             const label = formatSourceLocation(loc, vscode.workspace.workspaceFolders?.[0]?.uri!)
-            vscode.window.setStatusBarMessage(`API Explorer: Found at ${label}`, 3000)
+            vscode.window.setStatusBarMessage(`Zerk: Found at ${label}`, 3000)
         }
     )
 }

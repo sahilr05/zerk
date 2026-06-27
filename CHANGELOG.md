@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.1] - 2026-06-27
+
+### Changed
+- **Renamed to Zerk.** Same extension, same install — just a sharper name. A Zerk fitting is where a mechanic injects grease to kill friction; Zerk does that for the gap between writing and testing your API. All functionality is unchanged; command IDs and settings keys are untouched, so existing setups keep working.
+
 ## [0.8.0] - 2026-06-27
 
 ### Added

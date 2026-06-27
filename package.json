@@ -1,8 +1,8 @@
 {
   "name": "api-explorer",
-  "displayName": "API Explorer",
-  "description": "Zero-config API explorer for FastAPI and OpenAPI projects. Auto-discovers endpoints, fires requests, and navigates to source - without leaving VSCode.",
-  "version": "0.8.0",
+  "displayName": "Zerk — API testing in your editor",
+  "description": "Zerk kills the friction between writing and testing your API. Zero-config: auto-discovers your running FastAPI/OpenAPI server's endpoints, fires requests, saves test cases, and smoke-tests — without leaving your editor.",
+  "version": "0.8.1",
   "private": false,
   "publisher": "sahilrajpal",
   "author": "Sahil Rajpal",
@@ -10,10 +10,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sahilr05/vscode-api-explorer"
+    "url": "https://github.com/sahilr05/zerk"
   },
   "bugs": {
-    "url": "https://github.com/sahilr05/vscode-api-explorer/issues"
+    "url": "https://github.com/sahilr05/zerk/issues"
   },
   "icon": "resources/icons/icon.png",
   "galleryBanner": {
@@ -45,7 +45,7 @@
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
-      "title": "API Explorer",
+      "title": "Zerk",
       "properties": {
         "apiExplorer.openapiUrl": {
           "type": "string",
@@ -62,7 +62,7 @@
       },
       {
         "command": "apiExplorer.changeBaseUrl",
-        "title": "API Explorer: Change Base URL"
+        "title": "Zerk: Change Base URL"
       },
       {
         "command": "apiExplorer.search",
@@ -131,7 +131,7 @@
       "activitybar": [
         {
           "id": "api-explorer",
-          "title": "API Explorer",
+          "title": "Zerk",
           "icon": "resources/icons/icon.svg"
         }
       ]

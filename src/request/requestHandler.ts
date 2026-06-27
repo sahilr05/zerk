@@ -53,7 +53,7 @@ export function attachRequestHandler(
         if (message.type === "saveCase") {
             if (!cases.available) {
                 vscode.window.showWarningMessage(
-                    'API Explorer: Open a folder to save test cases (they\'re stored in .api-explorer/cases.json).'
+                    'Zerk: Open a folder to save test cases (they\'re stored in .api-explorer/cases.json).'
                 )
                 return
             }
@@ -71,7 +71,7 @@ export function attachRequestHandler(
                 queryParams: message.queryParams && Object.keys(message.queryParams).length ? message.queryParams : undefined,
             })
             await postCases()
-            vscode.window.setStatusBarMessage(`API Explorer: Saved case "${name.trim()}"`, 2500)
+            vscode.window.setStatusBarMessage(`Zerk: Saved case "${name.trim()}"`, 2500)
             return
         }
 
@@ -101,7 +101,7 @@ export function attachRequestHandler(
             })
             treeProvider.setAuthEndpoint(endpointKey)
             vscode.window.showInformationMessage(
-                'API Explorer: Token set. Attached to all requests automatically.'
+                'Zerk: Token set. Attached to all requests automatically.'
             )
             return
         }
@@ -236,7 +236,7 @@ async function promptToStoreToken(
         : extracted.token
 
     const action = await vscode.window.showInformationMessage(
-        `API Explorer detected an auth token in ${endpoint.method} ${endpoint.path}. Use it for all requests?`,
+        `Zerk detected an auth token in ${endpoint.method} ${endpoint.path}. Use it for all requests?`,
         'Use Token',
         'Ignore',
         "Don't ask again"
@@ -267,7 +267,7 @@ async function promptToStoreToken(
             ? ` (expires in ${Math.round((extracted.expiresAt - Date.now()) / 60000)}m)`
             : ''
         vscode.window.showInformationMessage(
-            `API Explorer: Token stored${expiry}. Attached to all requests automatically.`
+            `Zerk: Token stored${expiry}. Attached to all requests automatically.`
         )
     } else if (action === "Don't ask again") {
         await authStore.ignore(endpointKey)

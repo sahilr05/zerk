@@ -59,7 +59,7 @@ async function runScope(deps: Deps, scope: Scope): Promise<void> {
 
     const all = treeProvider.endpoints
     if (!all.length) {
-        vscode.window.showWarningMessage('API Explorer: No endpoints loaded — connect to a server first.')
+        vscode.window.showWarningMessage('Zerk: No endpoints loaded — connect to a server first.')
         return
     }
 
@@ -93,7 +93,7 @@ async function runScope(deps: Deps, scope: Scope): Promise<void> {
 
     if (!items.length) {
         vscode.window.showInformationMessage(
-            'API Explorer: Nothing to run in scope — no saved cases and no eligible GET endpoints.'
+            'Zerk: Nothing to run in scope — no saved cases and no eligible GET endpoints.'
         )
         return
     }

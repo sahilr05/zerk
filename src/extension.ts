@@ -38,7 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
         if (remaining <= 0 && !_expiredAlertShown) {
             _expiredAlertShown = true
             vscode.window.showWarningMessage(
-                `API Explorer: Auth token expired. Re-authenticate to continue.`,
+                `Zerk: Auth token expired. Re-authenticate to continue.`,
                 'Open Login'
             ).then(action => {
                 if (action === 'Open Login') {
@@ -79,7 +79,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     if (currentVersion && lastVersion && currentVersion !== lastVersion) {
         vscode.window.showInformationMessage(
-            `API Explorer updated to v${currentVersion}`,
+            `Zerk updated to v${currentVersion}`,
             "What's New",
         ).then(action => {
             if (action === "What's New") {
@@ -115,7 +115,7 @@ export function activate(context: vscode.ExtensionContext) {
                 _isConnected = true
                 stopPolling()
                 vscode.window.setStatusBarMessage(
-                    `API Explorer: Connected — ${endpoints.length} endpoints loaded`, 3000
+                    `Zerk: Connected — ${endpoints.length} endpoints loaded`, 3000
                 )
             } catch {
                 // still offline — keep polling silently

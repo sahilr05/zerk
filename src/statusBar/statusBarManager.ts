@@ -57,7 +57,7 @@ export class StatusBarManager {
         switch (this._state) {
 
             case 'loading':
-                this._item.text    = `$(loading~spin) API Explorer`
+                this._item.text    = `$(loading~spin) Zerk`
                 this._item.tooltip = `Connecting to ${this._config.baseUrl}…\nClick to change base URL`
                 this._item.color   = undefined
                 break
@@ -65,7 +65,7 @@ export class StatusBarManager {
             case 'connected':
                 this._item.text    = `$(plug) ${host} · ${this._endpointCount} endpoints`
                 this._item.tooltip = new vscode.MarkdownString(
-                    `**API Explorer** — Connected\n\n` +
+                    `**Zerk** — Connected\n\n` +
                     `Base URL: \`${this._config.baseUrl}\`\n\n` +
                     `Click to change base URL`
                 )
@@ -73,9 +73,9 @@ export class StatusBarManager {
                 break
 
             case 'error':
-                this._item.text    = `$(error) API Explorer · offline`
+                this._item.text    = `$(error) Zerk · offline`
                 this._item.tooltip = new vscode.MarkdownString(
-                    `**API Explorer** — Could not reach server\n\n` +
+                    `**Zerk** — Could not reach server\n\n` +
                     `Tried: \`${this._config.baseUrl}/openapi.json\`\n\n` +
                     `Click to change base URL`
                 )

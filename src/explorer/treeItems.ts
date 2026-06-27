@@ -1,6 +1,6 @@
 /**
  * treeItems.ts
- * All VSCode TreeItem subclasses for the API Explorer sidebar.
+ * All VSCode TreeItem subclasses for the Zerk sidebar.
  */
 
 import * as vscode    from 'vscode'

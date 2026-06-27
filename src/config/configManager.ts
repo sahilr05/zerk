@@ -113,7 +113,7 @@ export class ConfigManager {
 
     async promptChange(): Promise<boolean> {
         const input = await vscode.window.showInputBox({
-            title:    'API Explorer — Set Base URL',
+            title:    'Zerk — Set Base URL',
             prompt:   'Base URL for this workspace',
             value:    this._baseUrl,
             validateInput: (v) =>

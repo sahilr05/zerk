@@ -25,7 +25,7 @@ export class ConfigPanel {
 
         const panel = vscode.window.createWebviewPanel(
             'apiExplorerConfig',
-            'API Explorer — Project Config',
+            'Zerk — Project Config',
             vscode.ViewColumn.Active,
             { enableScripts: true, retainContextWhenHidden: true }
         )
