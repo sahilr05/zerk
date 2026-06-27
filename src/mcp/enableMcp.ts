@@ -73,7 +73,7 @@ export async function enableMcp(
         json = parsed && typeof parsed === "object" ? parsed : {}
         if (!json.mcpServers || typeof json.mcpServers !== "object") json.mcpServers = {}
     } catch {
-        // File doesn't exist yet — start fresh.
+        // File doesn't exist yet, start fresh.
     }
 
     json.mcpServers.zerk = entry
