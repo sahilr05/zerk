@@ -77,6 +77,18 @@ It's safe by default: only cases you explicitly saved are replayed, GET endpoint
 
 ---
 
+### Let your AI agent test your API *(preview)*
+
+Run **"Zerk: Enable MCP"** from the command palette and Zerk wires a Model Context Protocol server into your editor's agent (Windsurf, Cursor) or Claude Code. Now your agent can test the API it just wrote, for real:
+
+- **`fire_request`** - fires an authenticated request against your running server. The auth token is attached server-side and is **never exposed to the agent**, so you never paste credentials into a chat.
+- **`list_saved_cases`** - hands the agent your known-good payloads instead of letting it guess request shapes.
+- **`run_case`** - replays one of your saved cases, authenticated, and returns the real response.
+
+The point isn't "AI that writes tests" - it's an agent that **executes against your live, authenticated server with your tested payloads**. Ask it to "add a POST endpoint and make sure it works," and it writes the code, fires it, reads the real 422, fixes the schema, and re-fires - no context switch, no credentials in the chat.
+
+---
+
 ### Native VSCode feel
 
 - Each endpoint opens in its own tab - click the same endpoint again to return to it

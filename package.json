@@ -2,7 +2,7 @@
   "name": "api-explorer",
   "displayName": "Zerk: API testing in your editor",
   "description": "Zerk kills the friction between writing and testing your API. Zero-config: auto-discovers your running FastAPI/OpenAPI server's endpoints, fires requests, saves test cases, and smoke-tests - without leaving your editor.",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "private": false,
   "publisher": "sahilrajpal",
   "author": "Sahil Rajpal",

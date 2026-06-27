@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.10.0] - 2026-06-27
+
+### Added
+- **MCP server (preview) - let your AI agent test your live API.** Run "Zerk: Enable MCP" and Zerk wires a Model Context Protocol server into your editor's agent (Windsurf, Cursor) or Claude Code. The agent can then fire authenticated requests against your running server and replay your saved test cases - with the auth token attached server-side and never exposed to the agent, and using your known-good payloads instead of guessing. Three tools: `fire_request`, `list_saved_cases`, `run_case`.
+
 ## [0.9.0] - 2026-06-27
 
 ### Added
