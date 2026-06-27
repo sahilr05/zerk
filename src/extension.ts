@@ -11,6 +11,7 @@ import { HistoryTreeProvider }  from './history/historyTreeProvider'
 import { AuthStore }            from './auth/authStore'
 import { CasesStore }           from './cases/casesStore'
 import { registerSmokeTest }    from './smoke/smokeTest'
+import { enableMcp }            from './mcp/enableMcp'
 import { ApiEndpoint }          from './types/endpoint'
 
 const ALL_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"]
@@ -56,8 +57,23 @@ export function activate(context: vscode.ExtensionContext) {
     const expiryTimer = setInterval(checkExpiry, 30_000)
     context.subscriptions.push({ dispose: () => clearInterval(expiryTimer) })
 
+    // ── MCP token file ────────────────────────────────────────────────────────
+    // The bundled MCP server reads the bearer token from this file (ZERK_TOKEN_FILE),
+    // so the agent always fires with a current token. We rewrite it whenever auth changes.
+    const mcpTokenUri = vscode.Uri.joinPath(context.globalStorageUri, 'mcp-token')
+    const syncMcpToken = async () => {
+        try {
+            await vscode.workspace.fs.createDirectory(context.globalStorageUri)
+            const active = await authStore.getActiveToken()
+            let token = active && (!active.expiresAt || active.expiresAt > Date.now()) ? active.token : undefined
+            if (!token && config.auth.type === 'bearer' && config.auth.token) token = config.auth.token
+            await vscode.workspace.fs.writeFile(mcpTokenUri, Buffer.from(token ?? '', 'utf8'))
+        } catch { /* best effort */ }
+    }
+    syncMcpToken()
+
     // Restore auth endpoint markers in tree on startup
-    authStore.onDidChange(() => { _expiredAlertShown = false; checkExpiry() })
+    authStore.onDidChange(() => { _expiredAlertShown = false; checkExpiry(); syncMcpToken() })
 
     authStore.getAll().then(async tokens => {
         treeProvider.setAuthEndpoints(tokens.map(t => t.endpointKey))
@@ -162,10 +178,22 @@ export function activate(context: vscode.ExtensionContext) {
         RequestPanel.notifyConfigChanged(config.auth)
     })
 
+    // keep the MCP token file in step with config-driven auth changes too
+    config.onDidChange(() => syncMcpToken())
+
     // ── Config panel ──────────────────────────────────────────────────────────
     const openConfigCommand = vscode.commands.registerCommand(
         'apiExplorer.openConfig',
         () => ConfigPanel.open(context, config, loadEndpoints)
+    )
+
+    // ── Enable MCP for AI agents ──────────────────────────────────────────────
+    const enableMcpCommand = vscode.commands.registerCommand(
+        'apiExplorer.enableMcp',
+        async () => {
+            await syncMcpToken()
+            await enableMcp(context, config, mcpTokenUri.fsPath)
+        }
     )
 
     // ── Search ────────────────────────────────────────────────────────────────
@@ -343,6 +371,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(
         openConfigCommand,
+        enableMcpCommand,
         searchCommand, clearSearchCommand,
         refreshCommand, changeBaseUrlCommand,
         openRequestCommand, openFromHistoryCommand, clearHistoryCommand,

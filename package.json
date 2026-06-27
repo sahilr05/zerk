@@ -123,6 +123,11 @@
         "command": "apiExplorer.runModule",
         "title": "Run all in module",
         "icon": "$(beaker)"
+      },
+      {
+        "command": "apiExplorer.enableMcp",
+        "title": "Zerk: Enable MCP (let AI agents test your API)",
+        "icon": "$(plug)"
       }
     ],
     "viewsContainers": {

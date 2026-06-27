@@ -15,6 +15,7 @@
  *   ZERK_PROJECT_DIR - dir holding .api-explorer/cases.json (default: cwd)
  */
 
+import * as fs from "fs"
 import { Server }                from "@modelcontextprotocol/sdk/server/index.js"
 import { StdioServerTransport }  from "@modelcontextprotocol/sdk/server/stdio.js"
 import { ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprotocol/sdk/types.js"
@@ -26,12 +27,23 @@ import { buildRequestFromCase, executeRequest, PreparedRequest, ExecResult } fro
 import { readAllCases, listCasesFor } from "../core/casesReader"
 
 const BASE_URL    = (process.env.ZERK_BASE_URL || "http://localhost:8000").replace(/\/$/, "")
-const TOKEN       = process.env.ZERK_TOKEN
+const TOKEN_FILE  = process.env.ZERK_TOKEN_FILE
 const PROJECT_DIR = process.env.ZERK_PROJECT_DIR || process.cwd()
+
+// Read the token fresh each call: the extension rewrites ZERK_TOKEN_FILE whenever
+// you re-login, so the agent always uses a current token without a restart.
+// Falls back to a static ZERK_TOKEN env if no file is configured.
+function currentToken(): string | undefined {
+    if (TOKEN_FILE) {
+        try { return fs.readFileSync(TOKEN_FILE, "utf8").trim() || undefined } catch { return undefined }
+    }
+    return process.env.ZERK_TOKEN || undefined
+}
 
 // The token is attached here, server-side. It is never returned to the agent.
 function authHeaders(): Record<string, string> {
-    return { "Content-Type": "application/json", ...(TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {}) }
+    const token = currentToken()
+    return { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) }
 }
 
 // Lazily fetch + cache the parsed spec (needed only for replaying saved cases,
@@ -171,7 +183,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 async function main() {
     // stderr only - stdout is the JSON-RPC channel.
-    console.error(`Zerk MCP ready. base=${BASE_URL} dir=${PROJECT_DIR} auth=${TOKEN ? "on" : "off"}`)
+    console.error(`Zerk MCP ready. base=${BASE_URL} dir=${PROJECT_DIR} auth=${currentToken() ? "on" : "off"}`)
     await server.connect(new StdioServerTransport())
 }
 
