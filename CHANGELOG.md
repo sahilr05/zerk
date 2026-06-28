@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.10.2] - 2026-06-29
+
+### Added
+- **Cmd/Ctrl+Enter sends the request** - fire the open request from anywhere in the panel with a keyboard shortcut, no need to reach for the Send button.
+
+### Improved
+- **Request body grows to fit your schema** - the request body box now auto-expands to show the whole payload instead of clipping at a fixed height (capped at ~60% of the viewport, then scrolls). Manual resize still works as an override.
+
 ## [0.10.0] - 2026-06-27
 
 ### Added
