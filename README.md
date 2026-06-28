@@ -150,6 +150,16 @@ Zerk is built and tuned for FastAPI - zero config, full `$ref` schema resolution
 
 ---
 
+## Like Zerk?
+
+It's a one-person project and every bit of visibility helps:
+
+- ⭐ **Star it on [GitHub](https://github.com/sahilr05/zerk)**
+- ✍️ **Leave a review** on [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=sahilrajpal.api-explorer&ssr=false#review-details) or [Windsurf](https://marketplace.windsurf.com/extension/sahilrajpal/api-explorer)
+- 🐛 **Found a bug or have an idea?** Open a [GitHub Issue](https://github.com/sahilr05/zerk/issues)
+
+---
+
 ## Contributing
 
 Zerk is open source. Issues and PRs are welcome.

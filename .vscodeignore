@@ -11,6 +11,8 @@ vsc-extension-quickstart.md
 **/.vscode-test.*
 .githooks/**
 PLAN.md
+SOCIAL.md
+images/**
 node_modules/**
 esbuild.js
 package-lock.json

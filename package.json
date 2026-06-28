@@ -1,8 +1,8 @@
 {
   "name": "api-explorer",
   "displayName": "Zerk: API testing in your editor",
-  "description": "Zerk kills the friction between writing and testing your API. Zero-config: auto-discovers your running FastAPI/OpenAPI server's endpoints, fires requests, saves test cases, and smoke-tests - without leaving your editor.",
-  "version": "0.10.0",
+  "description": "A zero-config Postman alternative that lives in your editor. Auto-discovers your running FastAPI/OpenAPI server's endpoints, fires authenticated requests, saves git-committable test cases, and smoke-tests your API. A lightweight alternative to Postman, Insomnia, Bruno, and Thunder Client for VS Code, Cursor, and Windsurf.",
+  "version": "0.10.1",
   "private": false,
   "publisher": "sahilrajpal",
   "author": "Sahil Rajpal",
@@ -40,7 +40,15 @@
     "api explorer",
     "api client",
     "smoke test",
-    "testing"
+    "testing",
+    "postman",
+    "postman alternative",
+    "insomnia",
+    "bruno",
+    "thunder client",
+    "rest client",
+    "http client",
+    "api testing"
   ],
   "activationEvents": [
     "onStartupFinished"
