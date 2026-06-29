@@ -13,6 +13,11 @@ import { CasesStore }           from './cases/casesStore'
 import { registerSmokeTest }    from './smoke/smokeTest'
 import { enableMcp }            from './mcp/enableMcp'
 import { ApiEndpoint }          from './types/endpoint'
+import { TestCase }             from './core/types'
+import { readAllCases }         from './core/casesReader'
+import { buildRequestFromCase, executeRequest } from './core/executeRequest'
+import { resolveHeaders }       from './request/extensionAuth'
+import { generatePytest, FiredCase } from './export/pytestExporter'
 
 const ALL_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"]
 
@@ -362,6 +367,91 @@ export function activate(context: vscode.ExtensionContext) {
         }
     )
 
+    // ── Export saved cases to a runnable pytest file ──────────────────────────
+    const exportPytestCommand = vscode.commands.registerCommand(
+        'apiExplorer.exportPytest',
+        async () => {
+            const folder = vscode.workspace.workspaceFolders?.[0]
+            if (!folder) {
+                vscode.window.showWarningMessage('Zerk: Open a folder to export saved cases.')
+                return
+            }
+
+            // Match each saved case to a currently discovered endpoint.
+            const epMap = new Map<string, ApiEndpoint>()
+            for (const e of treeProvider.endpoints) epMap.set(`${e.method}:${e.path}`, e)
+
+            const pairs:   { endpoint: ApiEndpoint; testCase: TestCase }[] = []
+            const skipped: string[] = []
+            for (const [key, list] of Object.entries(readAllCases(folder.uri.fsPath))) {
+                const ep = epMap.get(key)
+                if (!ep) { if (list.length) skipped.push(key); continue }
+                for (const tc of list) pairs.push({ endpoint: ep, testCase: tc })
+            }
+
+            if (pairs.length === 0) {
+                vscode.window.showInformationMessage(
+                    treeProvider.endpoints.length === 0
+                        ? 'Zerk: Connect to your server first, then export.'
+                        : 'Zerk: No saved cases to export. Save a case on an endpoint first.'
+                )
+                return
+            }
+
+            const writes = pairs.filter(p =>
+                ['POST', 'PUT', 'PATCH', 'DELETE'].includes(p.endpoint.method)
+            ).length
+
+            const ok = await vscode.window.showWarningMessage(
+                `Zerk will fire ${pairs.length} request(s) against ${config.baseUrl} to record real responses` +
+                (writes ? `, including ${writes} write request(s) that may modify data.` : '.') +
+                ' Continue?',
+                { modal: true }, 'Fire & Export'
+            )
+            if (ok !== 'Fire & Export') return
+
+            const headers = await resolveHeaders(config, authStore)
+            const fired:  FiredCase[] = []
+
+            const failure = await vscode.window.withProgress(
+                { location: vscode.ProgressLocation.Notification, title: 'Zerk: Recording responses' },
+                async (progress) => {
+                    let i = 0
+                    for (const { endpoint, testCase } of pairs) {
+                        progress.report({ message: `${++i}/${pairs.length} ${endpoint.method} ${endpoint.path}` })
+                        try {
+                            const req = buildRequestFromCase(endpoint, testCase, config.baseUrl)
+                            const r   = await executeRequest(req, headers)
+                            fired.push({ endpoint, testCase, status: r.status, response: r.data })
+                        } catch (err: any) {
+                            return `Could not reach ${config.baseUrl} (${err?.message ?? err}). Start your server and retry.`
+                        }
+                    }
+                    return null
+                }
+            )
+
+            if (failure) { vscode.window.showErrorMessage('Zerk: ' + failure); return }
+
+            const target = await vscode.window.showSaveDialog({
+                defaultUri: vscode.Uri.joinPath(folder.uri, 'test_zerk.py'),
+                filters:    { Python: ['py'] },
+                saveLabel:  'Save pytest file',
+            })
+            if (!target) return
+
+            await vscode.workspace.fs.writeFile(
+                target, Buffer.from(generatePytest(fired, config.baseUrl), 'utf8')
+            )
+            await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(target))
+
+            vscode.window.showInformationMessage(
+                `Zerk: Exported ${fired.length} test(s).` +
+                (skipped.length ? ` Skipped ${skipped.length} (endpoint not in current spec).` : '')
+            )
+        }
+    )
+
     // ── Smoke test (run-all module / whole surface) ───────────────────────────
     const smokeCommands = registerSmokeTest(context, treeProvider, cases, config, authStore)
 
@@ -378,6 +468,7 @@ export function activate(context: vscode.ExtensionContext) {
         groupByMethodCommand, groupByModuleCommand,
         filterMethodCommand, filterModuleCommand,
         toggleSortCommand, filterAndSortCommand,
+        exportPytestCommand,
         authStore,
         cases,
         config,

@@ -2,7 +2,7 @@
   "name": "api-explorer",
   "displayName": "Zerk: API testing in your editor",
   "description": "A zero-config Postman alternative that lives in your editor. Auto-discovers your running FastAPI/OpenAPI server's endpoints, fires authenticated requests, saves git-committable test cases, and smoke-tests your API. A lightweight alternative to Postman, Insomnia, Bruno, and Thunder Client for VS Code, Cursor, and Windsurf.",
-  "version": "0.10.2",
+  "version": "0.10.3",
   "private": false,
   "publisher": "sahilrajpal",
   "author": "Sahil Rajpal",
@@ -136,6 +136,11 @@
         "command": "apiExplorer.enableMcp",
         "title": "Zerk: Enable MCP (let AI agents test your API)",
         "icon": "$(plug)"
+      },
+      {
+        "command": "apiExplorer.exportPytest",
+        "title": "Zerk: Export saved cases to pytest",
+        "icon": "$(export)"
       }
     ],
     "viewsContainers": {
@@ -197,6 +202,11 @@
           "command": "apiExplorer.runAll",
           "when": "view == apiExplorer.endpoints",
           "group": "navigation@5"
+        },
+        {
+          "command": "apiExplorer.exportPytest",
+          "when": "view == apiExplorer.endpoints",
+          "group": "1_export@1"
         },
         {
           "command": "apiExplorer.refresh",

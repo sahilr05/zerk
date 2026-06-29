@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.10.3] - 2026-06-29
+
+### Added
+- **Export saved cases to pytest.** Run "Zerk: Export saved cases to pytest" to turn your saved cases into a runnable pytest file (using httpx). Zerk fires each case once to record the real response, then writes one test per case asserting the status code and the presence of the response's top-level fields. Base URL and bearer token are read from `ZERK_BASE_URL` / `ZERK_TOKEN` environment variables, so no secret is written into the file and it is safe to commit. Write requests are confirmed before anything fires.
+
 ## [0.10.2] - 2026-06-29
 
 ### Added

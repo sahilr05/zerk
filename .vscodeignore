@@ -12,6 +12,7 @@ vsc-extension-quickstart.md
 .githooks/**
 PLAN.md
 SOCIAL.md
+docs/**
 images/**
 node_modules/**
 esbuild.js

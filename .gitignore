@@ -14,3 +14,6 @@ PLAN.md
 
 # Private social/content log — never commit
 SOCIAL.md
+
+# Private internal architecture/onboarding doc — never commit
+docs/ARCHITECTURE.md
